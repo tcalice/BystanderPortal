@@ -32,7 +32,8 @@ namespace ForEveryAdventure.Services
             var response = await _client.PostAsync($"{BaseUrl}/AddPlanLogistics", content);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<TripPlan>(json);
+            var tripPlan = JsonSerializer.Deserialize<TripPlan>(json) ?? throw new InvalidOperationException("Failed to deserialize TripPlan from API response.");
+            return tripPlan!;
         }
 
         public async Task<AssetTag> GetAssetTagAsync(string tagCode)
@@ -70,7 +71,8 @@ public static class AssetTagEndpoints
 
         group.MapGet("/{id}", (int id) =>
         {
-            //return new AssetTag { ID = id };
+            //Replace with actual lookup logic
+            return Results.Ok(new AssetTag { Id = Guid.NewGuid(), TagCode = "Sample" });
         })
         .WithName("GetAssetTagById")
         .WithOpenApi();
@@ -84,6 +86,22 @@ public static class AssetTagEndpoints
 
         group.MapPost("/", (AssetTag model) =>
         {
+            // Example return logic for the CreateAssetTag endpoint
+            group.MapPost("/", (AssetTag model) =>
+            {
+                // Simulate creating a new AssetTag with a generated Id and TagCode
+                var createdTag = new AssetTag
+                {
+                    Id = Guid.NewGuid(),
+                    TagCode = model.TagCode ?? $"TAG-{Guid.NewGuid().ToString().Substring(0, 8)}",
+                    UserId = model.UserId,
+                    EmergencyContacts = model.EmergencyContacts ?? new List<EmergencyContact>(),
+                    TripPlans = model.TripPlans ?? new List<TripPlan>()
+                };
+                return TypedResults.Created($"/api/AssetTag/{createdTag.Id}", createdTag);
+            })
+            .WithName("CreateAssetTag")
+            .WithOpenApi();
             //return TypedResults.Created($"/api/AssetTags/{model.ID}", model);
         })
         .WithName("CreateAssetTag")
@@ -91,6 +109,61 @@ public static class AssetTagEndpoints
 
         group.MapDelete("/{id}", (int id) =>
         {
+            return Results.Ok(new AssetTag
+            {
+                Id = Guid.NewGuid(),
+                TagCode = $"TAG-{Guid.NewGuid().ToString().Substring(0, 8)}",
+                UserId = Guid.NewGuid(),
+                EmergencyContacts = new List<EmergencyContact>
+                    {
+                        new EmergencyContact
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = "John Doe",
+                            Phone = "555-1234",
+                            Email = "john.doe@example.com"
+                        }
+                    },
+                TripPlans = new List<TripPlan>
+                    {
+                        new TripPlan
+                        {
+                            TripIdentifier = Guid.NewGuid(),
+                            TripRoutePreference = "Scenic",
+                            TripRoute = "Mountain Trail",
+                            TripStartDate = DateTime.UtcNow,
+                            TripEndDate = DateTime.UtcNow.AddDays(3),
+                            TripDurationDays = 3,
+                            TripLocationStart = new List<ForEveryAdventure.Models.LocationCoordinates>
+                            {
+                                new ForEveryAdventure.Models.LocationCoordinates
+                                {
+                                    LocationIdentifier = Guid.NewGuid(),
+                                    LocationName = "Trailhead",
+                                    LocationGPSformat01 = "40.7128,-74.0060"
+                                }
+                            },
+                            TripLocationEnd = new List<ForEveryAdventure.Models.LocationCoordinates>
+                            {
+                                new ForEveryAdventure.Models.LocationCoordinates
+                                {
+                                    LocationIdentifier = Guid.NewGuid(),
+                                    LocationName = "Summit",
+                                    LocationGPSformat01 = "40.7138,-74.0070"
+                                }
+                            },
+                            TripFeaturedLocation = new List<ForEveryAdventure.Models.LocationCoordinates>
+                            {
+                                new ForEveryAdventure.Models.LocationCoordinates
+                                {
+                                    LocationIdentifier = Guid.NewGuid(),
+                                    LocationName = "Lake View",
+                                    LocationGPSformat01 = "40.7148,-74.0080"
+                                }
+                            }
+                        }
+                    }
+            });
             //return TypedResults.Ok(new AssetTag { ID = id });
         })
         .WithName("DeleteAssetTag")
@@ -114,6 +187,47 @@ public static class TripPlanEndpoints
         group.MapGet("/{id}", (int id) =>
         {
             //return new TripPlan { ID = id };
+            group.MapGet("/{id}", (int id) =>
+            {
+                // Example return logic for GetTripPlanById
+                var exampleTripPlan = new TripPlan
+                {
+                    TripIdentifier = Guid.NewGuid(),
+                    TripRoutePreference = "Scenic",
+                    TripRoute = "Mountain Trail",
+                    TripStartDate = DateTime.UtcNow,
+                    TripEndDate = DateTime.UtcNow.AddDays(3),
+                    TripDurationDays = 3,
+                    TripLocationStart = new List<ForEveryAdventure.Models.LocationCoordinates>
+                    {
+                            new ForEveryAdventure.Models.LocationCoordinates
+                            {
+                                LocationIdentifier = Guid.NewGuid(),
+                                LocationName = "Trailhead",
+                                LocationGPSformat01 = "40.7128,-74.0060"
+                            }
+                    },
+                    TripLocationEnd = new List<ForEveryAdventure.Models.LocationCoordinates>
+                    {
+                            new ForEveryAdventure.Models.LocationCoordinates
+                            {
+                                LocationIdentifier = Guid.NewGuid(),
+                                LocationName = "Summit",
+                                LocationGPSformat01 = "40.7138,-74.0070"
+                            }
+                    },
+                    TripFeaturedLocation = new List<ForEveryAdventure.Models.LocationCoordinates>
+                    {
+                            new ForEveryAdventure.Models.LocationCoordinates
+                            {
+                                LocationIdentifier = Guid.NewGuid(),
+                                LocationName = "Lake View",
+                                LocationGPSformat01 = "40.7148,-74.0080"
+                            }
+                    }
+                };
+                return Results.Ok(exampleTripPlan);
+            });
         })
         .WithName("GetTripPlanById")
         .WithOpenApi();
@@ -128,6 +242,20 @@ public static class TripPlanEndpoints
         group.MapPost("/", (TripPlan model) =>
         {
             //return TypedResults.Created($"/api/TripPlans/{model.ID}", model);
+            // Example return logic for the CreateTripPlan endpoint
+            var createdPlan = new TripPlan
+            {
+                TripIdentifier = Guid.NewGuid(),
+                TripRoutePreference = model.TripRoutePreference ?? "Scenic",
+                TripRoute = model.TripRoute ?? "Default Route",
+                TripStartDate = model.TripStartDate != default ? model.TripStartDate : DateTime.UtcNow,
+                TripEndDate = model.TripEndDate != default ? model.TripEndDate : DateTime.UtcNow.AddDays(3),
+                TripDurationDays = model.TripDurationDays > 0 ? model.TripDurationDays : 3,
+                TripLocationStart = model.TripLocationStart ?? new List<ForEveryAdventure.Models.LocationCoordinates>(),
+                TripLocationEnd = model.TripLocationEnd ?? new List<ForEveryAdventure.Models.LocationCoordinates>(),
+                TripFeaturedLocation = model.TripFeaturedLocation ?? new List<ForEveryAdventure.Models.LocationCoordinates>()
+            };
+            return TypedResults.Created($"/api/TripPlan/{createdPlan.TripIdentifier}", createdPlan);
         })
         .WithName("CreateTripPlan")
         .WithOpenApi();
@@ -135,6 +263,48 @@ public static class TripPlanEndpoints
         group.MapDelete("/{id}", (int id) =>
         {
             //return TypedResults.Ok(new TripPlan { ID = id });
+            group.MapDelete("/{id}", (int id) =>
+            {
+                // Example return logic for DeleteTripPlan
+                // Simulate deleting a TripPlan and returning the deleted object
+                var deletedPlan = new TripPlan
+                {
+                    TripIdentifier = Guid.NewGuid(),
+                    TripRoutePreference = "Deleted",
+                    TripRoute = "Deleted Route",
+                    TripStartDate = DateTime.UtcNow,
+                    TripEndDate = DateTime.UtcNow.AddDays(1),
+                    TripDurationDays = 1,
+                    TripLocationStart = new List<ForEveryAdventure.Models.LocationCoordinates>
+                    {
+                            new ForEveryAdventure.Models.LocationCoordinates
+                            {
+                                LocationIdentifier = Guid.NewGuid(),
+                                LocationName = "Deleted Start",
+                                LocationGPSformat01 = "0.0000,0.0000"
+                            }
+                    },
+                    TripLocationEnd = new List<ForEveryAdventure.Models.LocationCoordinates>
+                    {
+                            new ForEveryAdventure.Models.LocationCoordinates
+                            {
+                                LocationIdentifier = Guid.NewGuid(),
+                                LocationName = "Deleted End",
+                                LocationGPSformat01 = "0.0000,0.0000"
+                            }
+                    },
+                    TripFeaturedLocation = new List<ForEveryAdventure.Models.LocationCoordinates>
+                    {
+                            new ForEveryAdventure.Models.LocationCoordinates
+                            {
+                                LocationIdentifier = Guid.NewGuid(),
+                                LocationName = "Deleted Featured",
+                                LocationGPSformat01 = "0.0000,0.0000"
+                            }
+                    }
+                };
+                return Results.Ok(deletedPlan);
+            });
         })
         .WithName("DeleteTripPlan")
         .WithOpenApi();
