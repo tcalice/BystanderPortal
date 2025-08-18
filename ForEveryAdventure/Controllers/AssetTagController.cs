@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ForEveryAdventure.Models;
 
 namespace ForEveryAdventure.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize(Policy = "TripPlanning")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AssetTagController : ControllerBase
     {
         private readonly IAssetTagStore _store;
