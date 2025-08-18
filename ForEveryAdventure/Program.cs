@@ -6,6 +6,7 @@ using ForEveryAdventure.Models;
 using ForEveryAdventure.Controllers;
 using ForEveryAdventure.Services;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ForEveryAdventure
 {
@@ -32,6 +33,27 @@ namespace ForEveryAdventure
                 });
             });
             builder.Services.AddSingleton<IAssetTagStore, AssetTagStore>();
+            
+            // Add authentication services
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = "https://accounts.google.com";
+                    options.Audience = "232358876020-kv5mlakfb8ts9jn4oa6b7u9tfgfgap1b.apps.googleusercontent.com";
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true
+                    };
+                });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("TripPlanning", policy =>
+                policy.RequireClaim("scp", "Trip.Plan"));
+            });
 
             var app = builder.Build();
 
@@ -42,6 +64,9 @@ namespace ForEveryAdventure
             }
 
             app.UseHttpsRedirection();
+
+            // Add authentication before authorization
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 
